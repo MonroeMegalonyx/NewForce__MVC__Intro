@@ -1,6 +1,7 @@
 ﻿using DogGo.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
+using System.Collections.Generic;
 
 namespace DogGo.Repositories
 {
@@ -96,6 +97,43 @@ namespace DogGo.Repositories
 
                     reader.Close();
                     return null;
+                }
+            }
+        }
+
+        public List<Owner> GetAllOwners()
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"
+                        SELECT Id, [Name], Email, Address, Phone, NeighborhoodId
+                        FROM Owner
+                    ";
+
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    List<Owner> owners = new List<Owner>();
+                    while (reader.Read())
+                    {
+                        Owner owner = new Owner()
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            Name = reader.GetString(reader.GetOrdinal("Name")),
+                            Email = reader.GetString(reader.GetOrdinal("Email")),
+                            Address = reader.GetString(reader.GetOrdinal("Address")),
+                            Phone = reader.GetString(reader.GetOrdinal("Phone")),
+                            NeighborhoodId = reader.GetInt32(reader.GetOrdinal("NeighborhoodId"))
+                        };
+
+                        owners.Add(owner);
+                    }
+
+                    reader.Close();
+
+                    return owners;
                 }
             }
         }
